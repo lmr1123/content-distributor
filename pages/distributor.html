@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全平台内容分发助手</title>
+  <link rel="stylesheet" href="../css/distributor.css">
+  <!-- Quill Editor (本地文件，符合CSP策略) -->
+  <link rel="stylesheet" href="../css/quill.snow.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- 顶部导航栏 -->
+    <header class="header">
+      <div class="header-left">
+        <img src="../icons/icon48.png" alt="Logo" class="logo">
+        <h1>全平台内容分发助手</h1>
+      </div>
+      <div class="header-right">
+        <button id="settingsBtn" class="btn-icon" title="设置">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+      <!-- 左侧：URL输入和文章预览 -->
+      <div class="left-panel">
+        <div class="url-input-section">
+          <h2>导入文章</h2>
+          <div class="input-group">
+            <input type="text" id="wechatUrl" name="wechatUrl" placeholder="请输入微信公众号文章链接" class="url-input" autocomplete="url">
+            <button id="fetchBtn" class="btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              获取内容
+            </button>
+          </div>
+        </div>
+
+        <div class="article-meta" id="articleMeta" style="display: none;">
+          <div class="meta-item">
+            <label>文章标题</label>
+            <input type="text" id="articleTitle" name="articleTitle" class="meta-input" autocomplete="off">
+          </div>
+          <div class="meta-item">
+            <label>封面图片</label>
+            <div class="cover-preview">
+              <img id="coverImage" name="coverImage" src="" alt="封面">
+              <button id="changeCoverBtn" class="btn-secondary btn-small">更换封面</button>
+            </div>
+          </div>
+          <div class="meta-info">
+            <span id="wordCount">字数：0</span>
+            <span id="authorInfo">作者：-</span>
+          </div>
+        </div>
+
+        <div class="loading" id="loading" style="display: none;">
+          <div class="spinner"></div>
+          <span>正在获取文章内容...</span>
+        </div>
+      </div>
+
+      <!-- 右侧：富文本编辑器 -->
+      <div class="right-panel">
+        <div class="editor-header">
+          <h2>内容编辑</h2>
+          <div class="editor-actions">
+            <button id="formatBtn" class="btn-icon" title="格式优化">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="21" y1="10" x2="3" y2="10"></line>
+                <line x1="21" y1="6" x2="3" y2="6"></line>
+                <line x1="21" y1="14" x2="3" y2="14"></line>
+                <line x1="21" y1="18" x2="3" y2="18"></line>
+              </svg>
+            </button>
+            <button id="clearBtn" class="btn-icon" title="清空内容">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="editor"></div>
+      </div>
+    </main>
+
+    <!-- 底部：平台选择和同步 -->
+    <footer class="footer">
+      <div class="platform-section">
+        <h3>选择发布平台</h3>
+        <div class="platform-list">
+          <label class="platform-item">
+            <input type="checkbox" name="platform" value="xiaohongshu">
+            <div class="platform-card">
+              <div class="platform-icon xiaohongshu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                </svg>
+              </div>
+              <span>小红书</span>
+              <small>字数限制: 1000</small>
+            </div>
+          </label>
+
+          <label class="platform-item">
+            <input type="checkbox" name="platform" value="zhihu">
+            <div class="platform-card">
+              <div class="platform-icon zhihu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M5.721 0C2.251 0 0 2.25 0 5.719V18.28C0 21.751 2.252 24 5.721 24h12.56C21.751 24 24 21.75 24 18.281V5.72C24 2.249 21.75 0 18.281 0H5.72z"/>
+                </svg>
+              </div>
+              <span>知乎</span>
+              <small>无字数限制</small>
+            </div>
+          </label>
+
+          <label class="platform-item">
+            <input type="checkbox" name="platform" value="jianshu">
+            <div class="platform-card">
+              <div class="platform-icon jianshu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <rect width="24" height="24" rx="4"/>
+                </svg>
+              </div>
+              <span>简书</span>
+              <small>无字数限制</small>
+            </div>
+          </label>
+
+          <label class="platform-item">
+            <input type="checkbox" name="platform" value="toutiao">
+            <div class="platform-card">
+              <div class="platform-icon toutiao">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+              <span>今日头条</span>
+              <small>推荐5000字内</small>
+            </div>
+          </label>
+
+          <label class="platform-item">
+            <input type="checkbox" name="platform" value="bilibili">
+            <div class="platform-card">
+              <div class="platform-icon bilibili">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906L17.813 4.653zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773H5.333zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373z"/>
+                </svg>
+              </div>
+              <span>哔哩哔哩</span>
+              <small>专栏文章</small>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="sync-section">
+        <div class="sync-info">
+          <span id="selectedCount">已选择 0 个平台</span>
+          <small>快捷键：Ctrl/Cmd + Enter 同步，Ctrl/Cmd + Shift + F 优化排版</small>
+        </div>
+
+        <!-- Playwright 选项 -->
+        <div class="playwright-option">
+          <label class="checkbox-label">
+            <input type="checkbox" id="usePlaywright" disabled>
+            <span>使用 Playwright 自动上传图片（仅小红书）</span>
+          </label>
+          <span id="playwrightStatus" class="playwright-status offline">Playwright 服务未启动</span>
+        </div>
+
+        <!-- 小红书发布模式选择 -->
+        <div class="publish-mode-option" id="publishModeOption" style="display: none;">
+          <label class="publish-mode-label">小红书发布模式：</label>
+          <div class="publish-mode-radios">
+            <label class="radio-label">
+              <input type="radio" name="publishMode" value="upload" checked>
+              <span>上传图文</span>
+              <small>先上传图片，再填写内容</small>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="publishMode" value="longArticle">
+              <span>写长文</span>
+              <small>富文本编辑，支持插入图片</small>
+            </label>
+          </div>
+        </div>
+
+        <button id="syncBtn" class="btn-sync" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+          </svg>
+          开始同步分发
+        </button>
+      </div>
+    </footer>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <!-- Scripts (本地文件，符合CSP策略) -->
+  <script src="../js/lib/quill.min.js"></script>
+  <script src="../js/distributor.js"></script>
+</body>
+</html>

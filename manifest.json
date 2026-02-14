@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "全平台内容分发助手",
+  "version": "1.0.0",
+  "description": "一键将微信公众号文章同步分发到小红书、知乎等多个平台",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://mp.weixin.qq.com/*",
+    "https://mmbiz.qpic.cn/*",
+    "https://*.qpic.cn/*",
+    "https://*.xiaohongshu.com/*",
+    "https://*.zhihu.com/*",
+    "https://*.jianshu.com/*",
+    "https://*.toutiao.com/*",
+    "https://*.bilibili.com/*"
+  ],
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://creator.xiaohongshu.com/*"],
+      "js": ["js/content-scripts/xiaohongshu.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://zhuanlan.zhihu.com/*", "https://*.zhihu.com/*"],
+      "js": ["js/content-scripts/zhihu.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.jianshu.com/*",
+        "https://mp.toutiao.com/*",
+        "https://member.bilibili.com/*"
+      ],
+      "js": ["js/content-scripts/universal.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["pages/distributor.html", "css/*", "js/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

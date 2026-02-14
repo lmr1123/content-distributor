@@ -1,0 +1,21 @@
+{
+  "name": "content-distributor",
+  "version": "1.1.0",
+  "description": "Chrome extension for distributing content to multiple platforms with Playwright automation",
+  "main": "generate-icons.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "playwright-server": "node playwright-sync/server.js",
+    "sync-xiaohongshu": "node playwright-sync/xiaohongshu-sync.js"
+  },
+  "keywords": ["chrome-extension", "playwright", "content-distribution", "xiaohongshu"],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "canvas": "^3.2.1"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
+  }
+}

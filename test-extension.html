@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>扩展功能测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 { color: #6366f1; }
+    h2 { color: #333; margin-top: 0; }
+    .test-item {
+      padding: 10px;
+      margin: 10px 0;
+      border-left: 4px solid #ddd;
+      background: #f9f9f9;
+    }
+    .test-item.pass { border-color: #22c55e; }
+    .test-item.fail { border-color: #ef4444; }
+    .btn {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn:hover { background: #4f46e5; }
+    .result {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f0f9ff;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 全平台内容分发助手 - 功能测试</h1>
+
+  <div class="test-card">
+    <h2>📋 文件结构检查</h2>
+    <button class="btn" onclick="checkFiles()">检查文件</button>
+    <div id="fileResult" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>🔧 Manifest 验证</h2>
+    <button class="btn" onclick="checkManifest()">验证配置</button>
+    <div id="manifestResult" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>📝 模拟文章提取</h2>
+    <p>测试内容提取逻辑（使用模拟数据）</p>
+    <button class="btn" onclick="testExtraction()">运行测试</button>
+    <div id="extractionResult" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>🎨 UI 渲染测试</h2>
+    <p>检查主页面是否可以正常加载</p>
+    <button class="btn" onclick="testUI()">测试 UI</button>
+    <div id="uiResult" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>✅ 安装准备检查</h2>
+    <button class="btn" onclick="finalCheck()">完整检查</button>
+    <div id="finalResult" class="result"></div>
+  </div>
+
+  <script>
+    const requiredFiles = [
+      'manifest.json',
+      'js/background.js',
+      'js/distributor.js',
+      'css/distributor.css',
+      'pages/distributor.html',
+      'icons/icon16.png',
+      'icons/icon48.png',
+      'icons/icon128.png',
+      'js/content-scripts/xiaohongshu.js',
+      'js/content-scripts/zhihu.js',
+      'js/content-scripts/universal.js'
+    ];
+
+    async function checkFiles() {
+      const result = document.getElementById('fileResult');
+      result.textContent = '正在检查文件...\n';
+
+      for (const file of requiredFiles) {
+        try {
+          const response = await fetch(file);
+          if (response.ok) {
+            result.textContent += `✅ ${file}\n`;
+          } else {
+            result.textContent += `❌ ${file} - 未找到\n`;
+          }
+        } catch (e) {
+          result.textContent += `❌ ${file} - 错误\n`;
+        }
+      }
+    }
+
+    async function checkManifest() {
+      const result = document.getElementById('manifestResult');
+      try {
+        const response = await fetch('manifest.json');
+        const manifest = await response.json();
+
+        let output = 'Manifest 配置检查:\n\n';
+        output += `名称: ${manifest.name}\n`;
+        output += `版本: ${manifest.version}\n`;
+        output += `Manifest 版本: ${manifest.manifest_version}\n\n`;
+
+        output += `权限:\n`;
+        manifest.permissions.forEach(p => output += `  - ${p}\n`);
+
+        output += `\nContent Scripts:\n`;
+        manifest.content_scripts.forEach(cs => {
+          output += `  - 匹配: ${cs.matches.join(', ')}\n`;
+        });
+
+        output += `\n✅ Manifest 格式正确`;
+        result.textContent = output;
+      } catch (e) {
+        result.textContent = '❌ Manifest 解析失败: ' + e.message;
+      }
+    }
+
+    function testExtraction() {
+      const result = document.getElementById('extractionResult');
+
+      // 模拟微信文章HTML
+      const mockHTML = `
+        <div id="activity-name">测试文章标题</div>
+        <div id="js_name">测试公众号</div>
+        <div id="js_content">
+          <p>这是第一段内容</p>
+          <p>这是第二段内容</p>
+          <img src="test.jpg" />
+        </div>
+      `;
+
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = mockHTML;
+
+      const article = {
+        title: tempDiv.querySelector('#activity-name')?.textContent || '',
+        author: tempDiv.querySelector('#js_name')?.textContent || '',
+        content: tempDiv.querySelector('#js_content')?.innerHTML || ''
+      };
+
+      let output = '模拟文章提取结果:\n\n';
+      output += `标题: ${article.title}\n`;
+      output += `作者: ${article.author}\n`;
+      output += `内容长度: ${article.content.length} 字符\n\n`;
+
+      if (article.title && article.author && article.content) {
+        output += '✅ 内容提取逻辑正常';
+      } else {
+        output += '⚠️ 部分内容提取失败';
+      }
+
+      result.textContent = output;
+    }
+
+    async function testUI() {
+      const result = document.getElementById('uiResult');
+      try {
+        const response = await fetch('pages/distributor.html');
+        const html = await response.text();
+
+        let output = 'UI 检查结果:\n\n';
+        output += `文件大小: ${html.length} 字符\n`;
+
+        const checks = [
+          { name: 'Quill 编辑器引用', test: html.includes('quilljs.com') },
+          { name: '编辑器容器', test: html.includes('id="editor"') },
+          { name: '平台选择', test: html.includes('platform-item') },
+          { name: '同步按钮', test: html.includes('syncBtn') },
+          { name: '样式表引用', test: html.includes('distributor.css') }
+        ];
+
+        checks.forEach(check => {
+          output += `${check.test ? '✅' : '❌'} ${check.name}\n`;
+        });
+
+        result.textContent = output;
+      } catch (e) {
+        result.textContent = '❌ 加载失败: ' + e.message;
+      }
+    }
+
+    async function finalCheck() {
+      const result = document.getElementById('finalResult');
+      result.textContent = '正在进行完整检查...\n\n';
+
+      let allPass = true;
+
+      // 检查文件
+      let filesOK = true;
+      for (const file of requiredFiles) {
+        try {
+          const response = await fetch(file);
+          if (!response.ok) filesOK = false;
+        } catch (e) {
+          filesOK = false;
+        }
+      }
+      result.textContent += filesOK ? '✅ 所有必需文件存在\n' : '❌ 缺少必需文件\n';
+      allPass = allPass && filesOK;
+
+      // 检查 Manifest
+      try {
+        const response = await fetch('manifest.json');
+        const manifest = await response.json();
+        const manifestOK = manifest.manifest_version === 3 &&
+                          manifest.permissions.length > 0 &&
+                          manifest.content_scripts.length > 0;
+        result.textContent += manifestOK ? '✅ Manifest 配置正确\n' : '❌ Manifest 配置有误\n';
+        allPass = allPass && manifestOK;
+      } catch (e) {
+        result.textContent += '❌ Manifest 解析失败\n';
+        allPass = false;
+      }
+
+      result.textContent += '\n' + (allPass ?
+        '🎉 准备就绪！可以安装到 Chrome 浏览器' :
+        '⚠️ 存在问题，请检查上述错误');
+
+      result.textContent += '\n\n安装步骤:\n';
+      result.textContent += '1. 打开 chrome://extensions/\n';
+      result.textContent += '2. 启用"开发者模式"\n';
+      result.textContent += '3. 点击"加载已解压的扩展程序"\n';
+      result.textContent += '4. 选择 content-distributor 文件夹';
+    }
+  </script>
+</body>
+</html>

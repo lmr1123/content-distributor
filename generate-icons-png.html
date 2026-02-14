@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>图标生成器</title>
+</head>
+<body>
+  <h2>点击按钮生成图标</h2>
+  <button onclick="generateIcons()">生成PNG图标</button>
+  <div id="preview"></div>
+  <script>
+    function generateIcons() {
+      const sizes = [16, 48, 128];
+      const preview = document.getElementById('preview');
+      preview.innerHTML = '';
+
+      sizes.forEach(size => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        // 绘制渐变背景
+        const gradient = ctx.createLinearGradient(0, 0, size, size);
+        gradient.addColorStop(0, '#6366f1');
+        gradient.addColorStop(1, '#8b5cf6');
+
+        // 圆角矩形
+        const radius = size * 0.15;
+        ctx.beginPath();
+        ctx.moveTo(radius, 0);
+        ctx.lineTo(size - radius, 0);
+        ctx.quadraticCurveTo(size, 0, size, radius);
+        ctx.lineTo(size, size - radius);
+        ctx.quadraticCurveTo(size, size, size - radius, size);
+        ctx.lineTo(radius, size);
+        ctx.quadraticCurveTo(0, size, 0, size - radius);
+        ctx.lineTo(0, radius);
+        ctx.quadraticCurveTo(0, 0, radius, 0);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // 绘制分发图标
+        ctx.fillStyle = 'white';
+
+        // 向上箭头
+        ctx.beginPath();
+        ctx.moveTo(size * 0.5, size * 0.25);
+        ctx.lineTo(size * 0.65, size * 0.4);
+        ctx.lineTo(size * 0.55, size * 0.4);
+        ctx.lineTo(size * 0.55, size * 0.55);
+        ctx.lineTo(size * 0.45, size * 0.55);
+        ctx.lineTo(size * 0.45, size * 0.4);
+        ctx.lineTo(size * 0.35, size * 0.4);
+        ctx.closePath();
+        ctx.fill();
+
+        // 横条
+        ctx.fillRect(size * 0.25, size * 0.6, size * 0.5, size * 0.08);
+
+        // 下横条
+        ctx.fillRect(size * 0.25, size * 0.72, size * 0.35, size * 0.08);
+
+        // 小圆点
+        ctx.beginPath();
+        ctx.arc(size * 0.7, size * 0.76, size * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 转换为PNG并下载
+        const link = document.createElement('a');
+        link.download = `icon${size}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        // 预览
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        img.style.margin = '10px';
+        img.style.border = '1px solid #ccc';
+        preview.appendChild(img);
+      });
+
+      alert('图标已生成并开始下载！');
+    }
+  </script>
+</body>
+</html>

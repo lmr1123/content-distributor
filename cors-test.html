@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CORS 功能测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-card {
+      background: white;
+      padding: 25px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 { color: #6366f1; }
+    h2 { color: #333; margin-top: 0; }
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .status.pending { background: #fef3c7; color: #92400e; }
+    .status.success { background: #d1fae5; color: #065f46; }
+    .status.error { background: #fee2e2; color: #991b1b; }
+    .test-item {
+      padding: 12px;
+      margin: 10px 0;
+      background: #f9fafb;
+      border-radius: 6px;
+      border-left: 4px solid #d1d5db;
+    }
+    .test-item.pass { border-color: #22c55e; }
+    .test-item.fail { border-color: #ef4444; }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      margin: 10px 0;
+    }
+    button {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    button:hover { background: #4f46e5; }
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    .log {
+      background: #1e293b;
+      color: #10b981;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Monaco', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #3b82f6;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    .info-box strong { color: #1e40af; }
+  </style>
+</head>
+<body>
+  <h1>🧪 CORS 功能测试工具</h1>
+
+  <div class="test-card">
+    <h2>📋 前置检查</h2>
+    <div id="preCheck">
+      <div class="test-item">检查扩展权限...</div>
+    </div>
+  </div>
+
+  <div class="test-card">
+    <h2>🔗 文章提取测试</h2>
+    <div class="info-box">
+      <strong>说明：</strong>此测试将验证扩展是否能正确获取微信公众号文章内容。
+      <br>请输入一个<strong>公开的</strong>微信公众号文章链接进行测试。
+    </div>
+    <input type="text" id="articleUrl" placeholder="请输入微信公众号文章链接，例如：https://mp.weixin.qq.com/s/xxxxx">
+    <button onclick="testFetch()">开始测试</button>
+    <button onclick="clearLog()">清空日志</button>
+    <div id="testLog" class="log" style="margin-top: 15px;">等待测试...</div>
+  </div>
+
+  <div class="test-card">
+    <h2>📊 测试结果</h2>
+    <div id="testResults">
+      <p>尚未运行测试</p>
+    </div>
+  </div>
+
+  <div class="test-card">
+    <h2>💡 故障排查</h2>
+    <div class="info-box">
+      <strong>如果测试失败，请检查：</strong>
+      <ol style="margin: 10px 0 0 20px;">
+        <li>扩展是否已重新加载（chrome://extensions/）</li>
+        <li>文章链接是否正确且可公开访问</li>
+        <li>打开后台脚本控制台查看详细错误</li>
+        <li>检查是否有网络问题</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    let logs = [];
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+      logs.push(`[${timestamp}] ${prefix} ${message}`);
+      document.getElementById('testLog').textContent = logs.join('\n');
+    }
+
+    function clearLog() {
+      logs = [];
+      document.getElementById('testLog').textContent = '日志已清空，等待测试...';
+    }
+
+    async function testFetch() {
+      const url = document.getElementById('articleUrl').value.trim();
+
+      if (!url) {
+        log('请输入文章链接', 'error');
+        return;
+      }
+
+      if (!url.includes('mp.weixin.qq.com')) {
+        log('请输入有效的微信公众号文章链接', 'error');
+        return;
+      }
+
+      log('开始测试文章提取功能...');
+      log(`文章链接: ${url}`);
+
+      try {
+        // 检查 chrome API 是否可用
+        if (typeof chrome === 'undefined' || !chrome.runtime) {
+          throw new Error('Chrome API 不可用，请在扩展页面中使用');
+        }
+
+        log('发送请求到后台脚本...');
+
+        const response = await chrome.runtime.sendMessage({
+          action: 'fetchWechatArticle',
+          url: url
+        });
+
+        log('收到后台脚本响应');
+
+        if (response.success) {
+          log('✅ 文章提取成功！', 'success');
+          log(`标题: ${response.data.title}`);
+          log(`作者: ${response.data.author || '未知'}`);
+          log(`内容长度: ${response.data.textContent?.length || 0} 字符`);
+
+          displayResults(response.data);
+        } else {
+          log(`❌ 提取失败: ${response.error}`, 'error');
+          displayError(response.error);
+        }
+
+      } catch (error) {
+        log(`❌ 测试出错: ${error.message}`, 'error');
+        displayError(error.message);
+      }
+    }
+
+    function displayResults(data) {
+      const resultsDiv = document.getElementById('testResults');
+      resultsDiv.innerHTML = `
+        <div class="test-item pass">
+          <strong>✅ 测试通过</strong>
+          <p style="margin: 10px 0;">
+            <strong>标题：</strong>${data.title || '无'}<br>
+            <strong>作者：</strong>${data.author || '未知'}<br>
+            <strong>字数：</strong>${data.textContent?.length || 0}<br>
+            <strong>封面：</strong>${data.cover ? '有' : '无'}
+          </p>
+        </div>
+      `;
+    }
+
+    function displayError(error) {
+      const resultsDiv = document.getElementById('testResults');
+      resultsDiv.innerHTML = `
+        <div class="test-item fail">
+          <strong>❌ 测试失败</strong>
+          <p style="margin: 10px 0; color: #991b1b;">
+            错误信息：${error}
+          </p>
+          <p style="font-size: 13px; color: #6b7280;">
+            建议：检查扩展权限和网络连接，查看后台脚本控制台获取详细日志
+          </p>
+        </div>
+      `;
+    }
+
+    // 页面加载时的前置检查
+    window.addEventListener('DOMContentLoaded', () => {
+      const preCheckDiv = document.getElementById('preCheck');
+
+      try {
+        if (typeof chrome === 'undefined') {
+          preCheckDiv.innerHTML = `
+            <div class="test-item fail">
+              <strong>❌ 错误</strong><br>
+              此页面需要在 Chrome 扩展上下文中运行<br>
+              请通过扩展图标打开主页面
+            </div>
+          `;
+        } else if (!chrome.runtime) {
+          preCheckDiv.innerHTML = `
+            <div class="test-item fail">
+              <strong>❌ Chrome API 不可用</strong><br>
+              请确保此页面通过扩展打开
+            </div>
+          `;
+        } else {
+          preCheckDiv.innerHTML = `
+            <div class="test-item pass">
+              <strong>✅ 环境检查通过</strong><br>
+              Chrome API 可用，可以开始测试
+            </div>
+          `;
+        }
+      } catch (e) {
+        preCheckDiv.innerHTML = `
+          <div class="test-item fail">
+            <strong>❌ 检查失败</strong><br>
+            ${e.message}
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
