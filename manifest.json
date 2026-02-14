@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "全平台内容分发助手",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "一键将微信公众号文章同步分发到小红书、知乎等多个平台",
   "permissions": [
     "activeTab",
